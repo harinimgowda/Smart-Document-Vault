@@ -3,13 +3,17 @@ const { chatWithAI } = require("../services/aiService");
 // ✅ CHAT CONTROLLER
 const chatAI = async (req, res) => {
   try {
-    const { message } = req.body;
+    const { messages } = req.body;
 
-    if (!message) {
-      return res.status(400).json({ message: "Message required" });
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ message: "Messages array required" });
     }
 
-    const reply = await chatWithAI(message);
+    const reply = await chatWithAI(messages);
+
+    if (!reply) {
+      return res.status(500).json({ message: "AI failed to respond" });
+    }
 
     res.json({ reply });
   } catch (error) {

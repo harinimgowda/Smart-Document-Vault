@@ -141,7 +141,12 @@ function Search() {
     return highlightText(text.toString(), query);
   };
 
-  const getPreviewUrl = (doc) => `${BASE}/${doc.filePath}`;
+  const getPreviewUrl = (doc, query = "") => {
+    const url = `${BASE}/${doc.filePath}`;
+    return query?.trim()
+      ? `${url}#search=${encodeURIComponent(query.trim())}`
+      : url;
+  };
 
   const isWordDocument = (doc) => {
     const fileName = doc.originalName?.toLowerCase();
@@ -202,10 +207,11 @@ function Search() {
       fileName?.endsWith(".docx");
 
     if (isPdf) {
+      const previewUrl = getPreviewUrl(doc, keyword);
       return (
         <>
           <iframe
-            src={url}
+            src={previewUrl}
             width="100%"
             height="500"
             title="PDF Preview"

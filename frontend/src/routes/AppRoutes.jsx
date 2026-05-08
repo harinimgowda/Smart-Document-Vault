@@ -8,6 +8,7 @@ import Upload from "../pages/Upload";
 import Documents from "../pages/Documents";
 import Search from "../pages/Search";
 import Chat from "../pages/Chat";
+import SharedChat from "../pages/SharedChat";
 import Users from "../pages/Users";
 import NotFound from "../pages/NotFound";
 
@@ -60,6 +61,15 @@ function AnimatedRoutes() {
           element={
             <PageWrapper>
               <Register />
+            </PageWrapper>
+          }
+        />
+
+        <Route
+          path="/share"
+          element={
+            <PageWrapper>
+              <SharedChat />
             </PageWrapper>
           }
         />

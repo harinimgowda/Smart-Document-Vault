@@ -1,17 +1,33 @@
 const axios = require("axios");
 
-const chatWithAI = async (message) => {
+const chatWithAI = async (messages) => {
   try {
+    const normalizedMessages = Array.isArray(messages)
+      ? messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        }))
+      : [
+          {
+            role: "user",
+            content: String(messages),
+          },
+        ];
+
+    const promptMessages = [
+      {
+        role: "system",
+        content:
+          "You are a helpful AI assistant. Answer user questions clearly, concisely, and politely. Use the conversation context and provide useful replies.",
+      },
+      ...normalizedMessages,
+    ];
+
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         model: "openai/gpt-3.5-turbo",
-        messages: [
-          {
-            role: "user",
-            content: message,
-          },
-        ],
+        messages: promptMessages,
       },
       {
         headers: {
@@ -21,7 +37,7 @@ const chatWithAI = async (message) => {
       },
     );
 
-    return response.data.choices[0].message.content;
+    return response.data?.choices?.[0]?.message?.content?.trim() || null;
   } catch (error) {
     console.log("🔥 ERROR:", error.response?.data || error.message);
     return null;

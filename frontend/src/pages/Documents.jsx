@@ -22,11 +22,16 @@ function Documents() {
   // ✅ FIXED BASE URL (NO TRAILING SLASH)
   const BASE = "http://localhost:5000";
 
-  const getPreviewUrl = (doc) => `${BASE}/${doc.filePath}`;
+  const getPreviewUrl = (doc, query = "") => {
+    const url = `${BASE}/${doc.filePath}`;
+    return query?.trim()
+      ? `${url}#search=${encodeURIComponent(query.trim())}`
+      : url;
+  };
 
   const renderPreviewContent = (doc) => {
     if (!doc) return null;
-    const url = getPreviewUrl(doc);
+    const url = getPreviewUrl(doc, search);
     const fileName = doc.originalName?.toLowerCase();
     const isPdf = doc.fileType?.includes("pdf") || fileName?.endsWith(".pdf");
     const isImage =
