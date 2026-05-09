@@ -6,6 +6,26 @@ const pdfParse = pdfParseRaw.default || pdfParseRaw;
 const mammoth = require("mammoth");
 const { summarizeText } = require("../services/aiService");
 
+const fallbackSummary = (text) => {
+  if (!text) return "No summary available.";
+  const sentences =
+    text
+      .replace(/\s+/g, " ")
+      .match(/[^.!?]+[.!?]+/g)
+      ?.map((sentence) => sentence.trim()) || [];
+
+  if (sentences.length >= 2) {
+    return sentences.slice(0, 2).join(" ");
+  }
+
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length <= 60) {
+    return words.join(" ");
+  }
+
+  return `${words.slice(0, 60).join(" ")}...`;
+};
+
 // 📤 UPLOAD DOCUMENTS (FINAL FIXED VERSION)
 const uploadDocument = async (req, res) => {
   try {
@@ -62,11 +82,10 @@ const uploadDocument = async (req, res) => {
 
       try {
         if (extractedText && extractedText.length > 50) {
-          const limitedText = extractedText.slice(0, 5000);
-          summary = await summarizeText(limitedText);
+          summary = await summarizeText(extractedText);
 
           if (!summary || summary.trim().length < 40) {
-            summary = extractedText.slice(0, 5000);
+            summary = fallbackSummary(extractedText);
           }
         } else {
           summary = fallbackMetadataSummary();
@@ -74,7 +93,7 @@ const uploadDocument = async (req, res) => {
       } catch (err) {
         console.log("AI ERROR:", err.message);
         summary = extractedText
-          ? extractedText.slice(0, 5000)
+          ? fallbackSummary(extractedText)
           : fallbackMetadataSummary();
       }
 

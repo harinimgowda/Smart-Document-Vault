@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 import { motion } from "framer-motion";
-import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 import {
   PieChart,
@@ -22,7 +23,7 @@ import {
 function Dashboard() {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { dark, toggleTheme } = useTheme();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchDocs();
@@ -72,29 +73,21 @@ function Dashboard() {
       <Sidebar />
 
       <div className="main-content">
+        <Topbar />
+
         <section className="dashboard-hero">
           <div>
-            <span className="page-badge">Overview</span>
-            <h2>Dashboard</h2>
-            <p className="dashboard-desc">
-              Track your document activity, usage trends, and recent uploads
-              from a cleaner workspace.
-            </p>
+            <span className="page-badge">{t("overview")}</span>
+            <h2>{t("dashboard")}</h2>
+            <p className="dashboard-desc">{t("trackActivity")}</p>
           </div>
 
           <div className="hero-card card">
             <div className="hero-card-top">
               <div>
-                <p className="hero-card-title">Welcome back!</p>
-                <p className="hero-card-text">
-                  Your latest document insights are ready. Use the sidebar to
-                  manage files, search content, or upload in one click.
-                </p>
+                <p className="hero-card-title">{t("welcome")}</p>
+                <p className="hero-card-text">{t("welcomeText")}</p>
               </div>
-
-              <button className="theme-toggle-btn" onClick={toggleTheme}>
-                {dark ? "☀️ Light" : "🌙 Dark"}
-              </button>
             </div>
           </div>
         </section>
@@ -108,15 +101,15 @@ function Dashboard() {
         ) : (
           <>
             <div className="stats-grid">
-              <StatCard title="Documents" value={totalDocs} />
-              <StatCard title="Categories" value={totalCategories} />
-              <StatCard title="Recent" value={recentDocs.length} />
+              <StatCard title={t("totalDocuments")} value={totalDocs} />
+              <StatCard title={t("categories")} value={totalCategories} />
+              <StatCard title={t("recentUploads")} value={recentDocs.length} />
             </div>
 
             <div className="dashboard-charts">
               <div className="card chart-card">
                 <div className="card-header">
-                  <h5>Documents by Category</h5>
+                  <h5>{t("totalDocuments")} by Category</h5>
                 </div>
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
@@ -173,7 +166,7 @@ function Dashboard() {
             <section className="recent-section">
               <div className="section-header">
                 <div>
-                  <h5>Recent Documents</h5>
+                  <h5>{t("recentUploads")}</h5>
                   <p className="section-subtitle">Latest uploads at a glance</p>
                 </div>
                 <span className="badge">Top 5</span>

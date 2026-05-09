@@ -20,6 +20,7 @@ function Search() {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [wordHtmlCache, setWordHtmlCache] = useState({});
   const [wordLoading, setWordLoading] = useState(false);
+  const [currentWordHtml, setCurrentWordHtml] = useState("");
 
   const BASE = "http://localhost:5000";
 
@@ -270,15 +271,23 @@ function Search() {
     }
 
     if (isWord) {
-      const [wordHtml, setWordHtml] = useState("");
-      const [wordLoading, setWordLoading] = useState(true);
-
-      if (!wordHtml && wordLoading) {
+      // Load Word document HTML when viewing doc changes
+      if (
+        viewingDoc &&
+        viewingDoc._id &&
+        !wordHtmlCache[viewingDoc._id] &&
+        !wordLoading
+      ) {
+        setWordLoading(true);
         fetch(url)
           .then((res) => res.arrayBuffer())
           .then((buffer) => mammoth.convertToHtml({ arrayBuffer: buffer }))
           .then((result) => {
-            setWordHtml(result.value);
+            setWordHtmlCache((prev) => ({
+              ...prev,
+              [viewingDoc._id]: result.value,
+            }));
+            setCurrentWordHtml(result.value);
             setWordLoading(false);
           })
           .catch((err) => {
@@ -286,6 +295,8 @@ function Search() {
             setWordLoading(false);
           });
       }
+
+      const wordHtml = wordHtmlCache[viewingDoc?._id] || "";
 
       return (
         <div
@@ -350,6 +361,7 @@ function Search() {
   const closeDocumentViewer = () => {
     setViewingDoc(null);
     setCurrentMatchIndex(0);
+    setCurrentWordHtml("");
   };
 
   const goToNextMatch = () => {
@@ -522,36 +534,32 @@ function Search() {
                       )}
                     </div>
 
-                    {keyword.trim() && (
-                      <>
-                        {doc.summary && (
-                          <div
-                            className="mt-3 p-3 bg-info bg-opacity-10 rounded border border-info border-opacity-25"
-                            style={{ fontSize: "0.95rem", lineHeight: "1.7" }}
-                          >
-                            <small
-                              style={{ color: "#0c63e4", fontWeight: "700" }}
-                            >
-                              📋 Document Summary
-                            </small>
-                            <p
-                              className="mb-0 mt-2"
-                              dangerouslySetInnerHTML={{
-                                __html: highlightText(doc.summary, keyword),
-                              }}
-                            />
-                          </div>
-                        )}
+                    {doc.summary && (
+                      <div
+                        className="mt-3 p-3 bg-info bg-opacity-10 rounded border border-info border-opacity-25"
+                        style={{ fontSize: "0.95rem", lineHeight: "1.7" }}
+                      >
+                        <small style={{ color: "#0c63e4", fontWeight: "700" }}>
+                          📋 Document Summary
+                        </small>
+                        <p
+                          className="mb-0 mt-2"
+                          dangerouslySetInnerHTML={{
+                            __html: keyword.trim()
+                              ? highlightText(doc.summary, keyword)
+                              : doc.summary,
+                          }}
+                        />
+                      </div>
+                    )}
 
-                        {getSearchSnippet(doc, keyword) && (
-                          <p
-                            className="mt-3 search-snippet"
-                            dangerouslySetInnerHTML={{
-                              __html: getSearchSnippet(doc, keyword),
-                            }}
-                          />
-                        )}
-                      </>
+                    {keyword.trim() && getSearchSnippet(doc, keyword) && (
+                      <p
+                        className="mt-3 search-snippet"
+                        dangerouslySetInnerHTML={{
+                          __html: getSearchSnippet(doc, keyword),
+                        }}
+                      />
                     )}
 
                     {doc.originalName && doc.originalName !== doc.title && (
